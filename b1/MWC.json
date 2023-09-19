@@ -1,0 +1,39 @@
+{
+	"Input": {
+		"outdir": ["/data_/tardiflab/chris/development/NelsonProj/ProcessingScripts/testRetestPaper/spoil"],
+		"prot_name": "MWC",
+		"seq_params": {
+			"FA_deg": [6,20],
+			"TR_ms": [27,15],
+			"Phi0_deg": 50,
+			"B1range_percent": [65,70,75,80,85,90,95,100,105,110,115,120,125,130],
+			"Gdur_ms": 3.3876,
+			"Gamp_mT_per_m": 26
+		},
+		"tissue_params": {
+			"T1range_ms": [500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000],
+			"T2range_ms": 70,
+			"D_um2_per_ms": 0.8
+		},
+		"small_angle_approx": true
+	},
+	"Output": {
+		"P2_a": [67.87009999999999,-84.59950000000001,39.7394],
+		"P2_b": [-0.1407,0.1105,0.9631],
+		"small_angle_approx": true,
+		"RMSE_percent": {
+			"T1app": 5.854,
+			"T1corr": 0.299
+		}
+	},
+	"ToCopy": [
+		"hmri_def.MPMacq_set.names{NN} = 'MWC';",
+		"hmri_def.MPMacq_set.tags{NN}  = 'MWC';",
+		"hmri_def.MPMacq_set.vals{NN}  = [27  15   6  20];",
+		"hmri_def.imperfectSpoilCorr.MWC.tag = 'MWC';",
+		"hmri_def.imperfectSpoilCorr.MWC.P2_a = [67.8701     -84.5995      39.7394];",
+		"hmri_def.imperfectSpoilCorr.MWC.P2_b = [-0.1407      0.1105      0.9631];",
+		"hmri_def.imperfectSpoilCorr.MWC.small_angle_approx = true;",
+		"hmri_def.imperfectSpoilCorr.MWC.enabled = hmri_def.imperfectSpoilCorr.enabled;"
+	]
+}
