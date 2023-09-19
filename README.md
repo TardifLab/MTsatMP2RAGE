@@ -30,7 +30,7 @@ Code is broken up into sections depending on what you are looking to do.
 
 - **ProcessingScripts/** sample scripts for calculating maps
 
-# The inversion recovery data for the phantom was fit using the qMRlab GUI. I was not able to adapt the code to get it to run outside of that.
+The inversion recovery data for the phantom was fit using the qMRlab GUI. I was not able to adapt the code to get it to run outside of that.
 
 **If used, please reference the following publication:**
 
