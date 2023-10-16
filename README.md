@@ -34,7 +34,7 @@ The inversion recovery data for the phantom was fit using the qMRlab GUI. I was 
 
 **If used, please reference the following publication:**
 
-To be announced...
+Rowley CD, Nelson MC, Campbell JSW, Leppert IR, Pike GB, Tardif CL. Correcting for T1 bias in Magnetization Transfer Saturation (MTsat) Maps Using Sparse-MP2RAGE. http://arxiv.org/abs/2310.09102
 
 If you used the simulation code, please reference the following:
 
