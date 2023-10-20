@@ -1,4 +1,4 @@
-function setupSimPaths
+function setupSimPaths_MTsatMP2RAGE
 
 % Edit this function to contain the paths of your folders and run at the
 % start of scripts. 
@@ -16,7 +16,7 @@ simCodeDir = 'E:\GitHub\OptimizeIHMTimaging\';
 %% qMRlab code directory:
 % http://qmrlab.org/
 % https://github.com/qMRLab/qMRLab
-qMRlabDirectory = 'E:\GitHub\qMRLab-master';
+qMRlabDirectory = 'E:\GitHub\qMRLab';
 
 %% Misc Code for a variety of things:
 % https://github.com/christopherrowley/NeuroImagingMatlab
@@ -32,6 +32,6 @@ addpath(genpath(qMRlabDirectory))
 addpath(genpath(miscDir))
 
  
-
+cd(baseDir); % makes saving things easier!
 
 

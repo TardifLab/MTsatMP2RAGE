@@ -10,7 +10,8 @@
 - Assumes an MP2RAGE is used for T1 mapping, and thus for the noise calculations. So we need the MP2RAGE code from: https://github.com/JosePMarques/MP2RAGE-related-scripts
 - Contains some misc code such as colormaps, and the necessary MP2RAGE code for correcting M0 https://github.com/christopherrowley/NeuroImagingMatlab
   - Specificalling in /QuantitativeFitting/MP2RAGE-related-scripts-master/Rowley_custom
-
+- The polyFitN toolbox: https://www.mathworks.com/matlabcentral/fileexchange/34765-polyfitn
+- And a symbolic toolbox: https://www.mathworks.com/matlabcentral/fileexchange/9577-symbolic-polynomial-manipulation 
 ---
 
 ## Data
