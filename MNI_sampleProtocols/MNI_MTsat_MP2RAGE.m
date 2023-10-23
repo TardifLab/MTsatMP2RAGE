@@ -16,7 +16,7 @@
 fitValues_S_1 = load(fullfile(b1Dir,'fitValues_S_1.mat')); 
 
 % Define the output image file extension
-fileExt = '.nii'; % other options include '.nii.gz', '.mnc', '.mnc.gz'
+fileExt = '.nii.gz'; % other options include '.nii.gz', '.mnc', '.mnc.gz'
 
 % Specify if you want to view intermediate files:
 viewDebugImages = 1;

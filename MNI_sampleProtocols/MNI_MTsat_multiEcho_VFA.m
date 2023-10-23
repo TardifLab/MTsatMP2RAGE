@@ -31,7 +31,7 @@ viewDebugImages = 1;
 low_flip_angle = 6;    % flip angle in degrees -> Customize
 high_flip_angle = 20;  % flip angle in degrees -> Customize
 TR1 = 23;               % low flip angle repetition time of the GRE kernel in milliseconds -> Customize
-TR2 = 188;               % high flip angle repetition time of the GRE kernel in milliseconds -> Customize
+TR2 = 18;               % high flip angle repetition time of the GRE kernel in milliseconds -> Customize
 
 
 %% Average data over the echos. Note that you need to use the same number of echoes to average in each image,
