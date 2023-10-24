@@ -54,7 +54,6 @@ fn = fullfile(DATADIR,'itk_mask.nii.gz');
 [~, mask] = niak_read_vol(fn);
 mask1 = permute(mask,[2 3 1]); % conversion between minc and nii reorients it
 
-
 figure; imshow3Dfullseg( comb_mtw(:,:,:,i), [400 5000], mask1)
 
 %% Some B1 issues so lets try and load that
@@ -307,14 +306,14 @@ M0b_VFA      = zeros(size(R1_VFA));
 
 
 %% SPEED IT UP BY DOING A FEW AXIAL SLICES
-axialStart = 126; % 65
-axialStop = axialStart+3;%115;
-% check
- figure; imshow3Dfull(sat_dual1(:,axialStart:axialStop,:) , [0 0.06], jet)
-
+ 
+% [~, M0b_csMP2] = niak_read_vol(fullfile(OutputDir,'M0b_csMP2.mnc.gz')); 
+% [~, M0b_MP2] = niak_read_vol(fullfile(OutputDir,'M0b_MP2.mnc.gz')); 
+% [~, M0b_meGRE] = niak_read_vol(fullfile(OutputDir,'M0b_meGRE.mnc.gz')); 
+% [~, M0b_VFA] = niak_read_vol(fullfile(OutputDir,'M0b_VFA.mnc.gz'));  
 
 tic %  
-for i = 1:size(R1_VFA,1) % went to 149
+for i = 113:size(R1_VFA,1) % coronal
     
     for j = 1:size(R1_VFA,2) % for axial slices
         for k =  1:size(R1_VFA,3) % sagital slices  65
@@ -328,6 +327,15 @@ for i = 1:size(R1_VFA,1) % went to 149
 
             end
         end
+    end
+    
+    if rem( i, 20) == 0
+        % save intermediate results, since it can take a while and your
+        % computer might reset...
+        hdr.file_name = fullfile(OutputDir,'M0b_csMP2.mnc.gz'); niak_write_vol(hdr, M0b_csMP2);
+        hdr.file_name = fullfile(OutputDir,'M0b_MP2.mnc.gz'); niak_write_vol(hdr,M0b_MP2);
+        hdr.file_name = fullfile(OutputDir,'M0b_meGRE.mnc.gz'); niak_write_vol(hdr,M0b_meGRE);
+        hdr.file_name = fullfile(OutputDir,'M0b_VFA.mnc.gz'); niak_write_vol(hdr,M0b_VFA);
     end
     disp(i)
 end
@@ -388,8 +396,8 @@ corr_prot4 = MTsat_B1corr_factor_map(b1, R1_VFA,      b1, fitValues_VFA);
 
 
 % Part 2, apply correction map
-spmp2r_MTsat_c   = (spmp2r_MTsat + spmp2r_MTsat.* corr_prot1_d) .* mask1;
-mp2r_MTsat_c   = (mp2r_MTsat_c + mp2r_MTsat_c.* corr_prot2_d) .* mask1;
+spmp2r_MTsat_c   = (spmp2r_MTsat + spmp2r_MTsat.* corr_prot1) .* mask1;
+mp2r_MTsat_c   = (mp2r_MTsat + mp2r_MTsat.* corr_prot2) .* mask1;
 megre_MTsat_c  = (megre_MTsat + megre_MTsat.* corr_prot3) .* mask1;
 gre_MTsat_c       = (gre_MTsat     + gre_MTsat.* corr_prot4) .* mask1;
 
@@ -402,20 +410,20 @@ gre_MTsat_c = double(limitHandler(gre_MTsat_c,0, 0.1));
 
 
 %% View results
-figure; imshow3Dfull(spmp2r_MTsat_c , [0 0.06], jet); 
-figure; imshow3Dfull(mp2r_MTsat_c , [0 0.06], jet); 
-figure; imshow3Dfull(megre_MTsat_c , [0 0.06], jet)
-figure; imshow3Dfull(gre_MTsat_c , [0 0.06], jet); 
+figure; imshow3Dfull(spmp2r_MTsat_c , [0 0.046], jet); 
+figure; imshow3Dfull(mp2r_MTsat_c , [0 0.046], jet); 
+figure; imshow3Dfull(megre_MTsat_c , [0 0.03], jet)
+figure; imshow3Dfull(gre_MTsat_c , [0 0.046], jet); 
 
 
 %% Other things, save if you want
 
-hdr.file_name = strcat(DATADIR,'matlab/MTsat_csMP2RAGE.mnc.gz'); niak_write_vol(hdr, spmp2r_MTsat_c);
-hdr.file_name = strcat(DATADIR,'matlab/MTsat_MP2RAGE.mnc.gz'); niak_write_vol(hdr, mp2r_MTsat_c);
-hdr.file_name = strcat(DATADIR,'matlab/MTsat_me-gre.mnc.gz'); niak_write_vol(hdr, megre_MTsat_c);
-hdr.file_name = strcat(DATADIR,'matlab/MTsat_gre.mnc.gz'); niak_write_vol(hdr, gre_MTsat_c);
+hdr.file_name = strcat(DATADIR,'/matlab/MTsat_csMP2RAGE.mnc.gz'); niak_write_vol(hdr, spmp2r_MTsat_c);
+hdr.file_name = strcat(DATADIR,'/matlab/MTsat_MP2RAGE.mnc.gz'); niak_write_vol(hdr, mp2r_MTsat_c);
+hdr.file_name = strcat(DATADIR,'/matlab/MTsat_me-gre.mnc.gz'); niak_write_vol(hdr, megre_MTsat_c);
+hdr.file_name = strcat(DATADIR,'/matlab/MTsat_gre.mnc.gz'); niak_write_vol(hdr, gre_MTsat_c);
 
-hdr.file_name = strcat(DATADIR,'matlab/b1.mnc.gz'); niak_write_vol(hdr, b1);
+hdr.file_name = strcat(DATADIR,'/matlab/b1.mnc.gz'); niak_write_vol(hdr, b1);
 
 
 
