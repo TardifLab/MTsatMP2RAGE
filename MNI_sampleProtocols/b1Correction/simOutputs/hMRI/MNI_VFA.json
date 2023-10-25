@@ -1,0 +1,39 @@
+{
+	"Input": {
+		"outdir": ["E:\\GitHub\\MTsatMP2RAGE\\MNI_sampleProtocols\\b1Correction\\simOutputs\\hMRI"],
+		"prot_name": "MNI_VFA",
+		"seq_params": {
+			"FA_deg": [5,15],
+			"TR_ms": [25,15],
+			"Phi0_deg": 50,
+			"B1range_percent": [60,65,70,75,80,85,90,95,100,105,110,115,120,125,130],
+			"Gdur_ms": 1.475,
+			"Gamp_mT_per_m": 24
+		},
+		"tissue_params": {
+			"T1range_ms": [500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000],
+			"T2range_ms": 80,
+			"D_um2_per_ms": 0.8
+		},
+		"small_angle_approx": false
+	},
+	"Output": {
+		"P2_a": [30.9471,-36.7804,23.9561],
+		"P2_b": [-0.0723,0.0474,0.9853],
+		"small_angle_approx": false,
+		"RMSE_percent": {
+			"T1app": 2.858,
+			"T1corr": 0.145
+		}
+	},
+	"ToCopy": [
+		"hmri_def.MPMacq_set.names{NN} = 'MNI_VFA';",
+		"hmri_def.MPMacq_set.tags{NN}  = 'MNI_VFA';",
+		"hmri_def.MPMacq_set.vals{NN}  = [25  15   5  15];",
+		"hmri_def.imperfectSpoilCorr.MNI_VFA.tag = 'MNI_VFA';",
+		"hmri_def.imperfectSpoilCorr.MNI_VFA.P2_a = [30.9471     -36.7804      23.9561];",
+		"hmri_def.imperfectSpoilCorr.MNI_VFA.P2_b = [-0.0723      0.0474      0.9853];",
+		"hmri_def.imperfectSpoilCorr.MNI_VFA.small_angle_approx = false;",
+		"hmri_def.imperfectSpoilCorr.MNI_VFA.enabled = hmri_def.imperfectSpoilCorr.enabled;"
+	]
+}

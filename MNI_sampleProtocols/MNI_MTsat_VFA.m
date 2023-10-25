@@ -72,17 +72,15 @@ end
 
 
 %% Apply spoiling correction:
-param.prot_name  = strcat('vfa_t2_80');    % Used in output - T2 = 80ms
-
+% I have copied the numbers from the JSON file from hMRI spoil correction:
 % I have wrote to a mat file
-coeff = load(fullfile( b1Dir, 'SpoilingFiles', [strrep(param.prot_name,' ',''),'_ABcoeff.mat']) );
 
 % Note in Preibisch and Deichmann 2009, A and B are quadratic functions
 % dependent on b1map.
 
 % Get coefficients from json:
-Acoef = coeff.polyCoeffA;
-Bcoef = coeff.polyCoeffB;
+Acoef = [30.9471,-36.7804,23.9561];
+Bcoef = [-0.0723,0.0474,0.9853];
 
 % Make correction factors:
 A = Acoef(1)*b1.^2 + Acoef(2)*b1 + Acoef(3);

@@ -185,14 +185,43 @@ a2 = deg2rad(high_flip_angle);
 gre_R1 = hmri_calc_R1(struct( 'data', gre_PDw, 'fa', a1, 'TR', TR1, 'B1', b1),...
             struct( 'data', gre_T1w, 'fa', a2, 'TR', TR2, 'B1', b1), smallFlipApprox);
 
-gre_M0 = hmri_calc_A(struct( 'data', gre_PDw, 'fa', a1, 'TR', TR1, 'B1', b1),...
-            struct( 'data', gre_T1w, 'fa', a2, 'TR', TR2, 'B1', b1), smallFlipApprox);
+% gre_M0 = hmri_calc_A(struct( 'data', gre_PDw, 'fa', a1, 'TR', TR1, 'B1', b1),...
+%             struct( 'data', gre_T1w, 'fa', a2, 'TR', TR2, 'B1', b1), smallFlipApprox);
          
 gre_T1 = 1./gre_R1.*mask1; % convert to milliseconds
-gre_M0 = gre_M0 .* mask1;
+% gre_M0 = gre_M0 .* mask1;
 
 gre_T1 = double(limitHandler(gre_T1, 0, 6000));
-gre_M0 = double(limitHandler(gre_M0, 0, 20000));
+% gre_M0 = double(limitHandler(gre_M0, 0, 20000));
+
+% Coeff from hMRI toolbox.
+Acoef = [30.9471,-36.7804,23.9561];
+Bcoef = [-0.0723,0.0474,0.9853];
+% Make correction factors:
+A = Acoef(1)*b1.^2 + Acoef(2)*b1 + Acoef(3);
+B = Bcoef(1)*b1.^2 + Bcoef(2)*b1 + Bcoef(3);
+
+% Apply to the T1 map - in milliseconds as simulations are done in ms
+gre_T1 = A + B.*gre_T1 .*mask1;
+
+% Recalculate M0 using this and the flash equation
+
+flip_a = (low_flip_angle*b1) * pi / 180; % correct for B1 and convert to radians
+x = cos(flip_a) ;
+y = exp(-TR1./T1corr);
+
+% Solve for M0 using equation for flass image.
+M0_1 = lfa_ur.*(1-x.*y)./ ( (1-y) .*sin(flip_a));
+
+% second image
+flip_a = (high_flip_angle*b1) * pi / 180; % correct for B1 and convert to radians
+x = cos(flip_a) ;
+y = exp(-TR2./T1corr);
+
+% Solve for M0 using equation for flass image.
+M0_2 = hfa_ur.*(1-x.*y)./ ( (1-y) .*sin(flip_a));
+gre_M0 = (M0_1 + M0_2)./2; 
+gre_M0 = limitHandler(gre_M0, 0, 20000);
 
 hdr.file_name = fullfile(DATADIR,'matlab/gre_T1.mnc.gz'); niak_write_vol(hdr, gre_T1);
 hdr.file_name = fullfile(DATADIR,'matlab/gre_M0.mnc.gz'); niak_write_vol(hdr, gre_M0);
@@ -225,14 +254,45 @@ a2 = deg2rad(high_flip_angle);
 megre_R1 = hmri_calc_R1(struct( 'data', avgre_PDw, 'fa', a1, 'TR', TR1, 'B1', b1),...
             struct( 'data', avgre_T1w, 'fa', a2, 'TR', TR2, 'B1', b1), smallFlipApprox);
 
-megre_M0 = hmri_calc_A(struct( 'data', avgre_PDw, 'fa', a1, 'TR', TR1, 'B1', b1),...
-            struct( 'data', avgre_T1w, 'fa', a2, 'TR', TR2, 'B1', b1), smallFlipApprox);
+% megre_M0 = hmri_calc_A(struct( 'data', avgre_PDw, 'fa', a1, 'TR', TR1, 'B1', b1),...
+%             struct( 'data', avgre_T1w, 'fa', a2, 'TR', TR2, 'B1', b1), smallFlipApprox);
          
 megre_T1 = 1./megre_R1.*mask1; % convert to milliseconds
-megre_M0 = megre_M0 .* mask1;
+% megre_M0 = megre_M0 .* mask1;
 
 megre_T1 = double(limitHandler(megre_T1, 0, 6000));
-megre_M0 = double(limitHandler(megre_M0, 0, 20000));
+% megre_M0 = double(limitHandler(megre_M0, 0, 20000));
+
+% Coeff from hMRI toolbox.
+Acoef = [62.5025,-72.3755,34.616];
+Bcoef = [-0.1226,0.0852,0.9743000000000001];
+% Make correction factors:
+A = Acoef(1)*b1.^2 + Acoef(2)*b1 + Acoef(3);
+B = Bcoef(1)*b1.^2 + Bcoef(2)*b1 + Bcoef(3);
+
+% Apply to the T1 map - in milliseconds as simulations are done in ms
+gre_T1 = A + B.*gre_T1 .*mask1;
+
+% Recalculate M0 using this and the flash equation
+
+flip_a = (low_flip_angle*b1) * pi / 180; % correct for B1 and convert to radians
+x = cos(flip_a) ;
+y = exp(-TR1./T1corr);
+
+% Solve for M0 using equation for flass image.
+M0_1 = lfa_ur.*(1-x.*y)./ ( (1-y) .*sin(flip_a));
+
+% second image
+flip_a = (high_flip_angle*b1) * pi / 180; % correct for B1 and convert to radians
+x = cos(flip_a) ;
+y = exp(-TR2./T1corr);
+
+% Solve for M0 using equation for flass image.
+M0_2 = hfa_ur.*(1-x.*y)./ ( (1-y) .*sin(flip_a));
+megre_M0 = (M0_1 + M0_2)./2; 
+megre_M0 = limitHandler(megre_M0, 0, 20000);
+
+
 
 hdr.file_name = fullfile(DATADIR,'matlab/me-gre_T1.mnc.gz'); niak_write_vol(hdr, megre_T1);
 hdr.file_name = fullfile(DATADIR,'matlab/me-gre_M0.mnc.gz'); niak_write_vol(hdr, megre_M0);
