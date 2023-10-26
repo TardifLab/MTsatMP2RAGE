@@ -1,0 +1,30 @@
+
+% How you might try and set up the json file:
+param.outdir             = spoilFilesDir;
+
+T2 = [30, 50, 80, 110]; % test a few T2 values
+smallFlipApprox = false;
+
+for i = 1:length(T2)
+    param.prot_name  = strcat('vfa_t2_', num2str(T2(i)));    % Used in output
+
+    fnJSON = fullfile(param.outdir,[strrep(param.prot_name,' ',''),'.json']);
+    
+    if ~isfile(fnJSON)
+         % File does not exist calculate:
+         % Seq Params
+        param.FA_deg             = [low_flip_angle,high_flip_angle];
+        param.TR_ms              = [TR1, TR2];
+        param.Phi0_deg           = 50;              % RF spoil increment[deg]
+        param.B1range            = 0.6:0.05:1.4;    % convert such that 100% = 1
+        param.Gdur_ms            = 1.475;          % [ms]
+        param.Gamp_mT_per_m      = 24;              % [[mT/m]
+        param.T1range_ms         = 400:100:3000;  %[ms]
+        param.T2range_ms         = T2(i);            % [ms]
+        param.D_um2_per_ms       = 0.8;           % [um^2/ms]
+        param.small_angle_approx = smallFlipApprox; % KEEP CONSISTENT
+        
+        % With parameters set, calculate coefficients
+        hmri_corr_imperf_spoil_noGUI( param )
+    end
+end

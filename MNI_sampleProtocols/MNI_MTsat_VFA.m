@@ -11,8 +11,13 @@
 
 % Written by Christopher Rowley 2023
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+OutputDir = 'Directory\b1Correction\outputs'; % should be the same as in simSeq_M0b_R1obs_MNIprot.m
+DATADIR = 'Directory/to/Save/Output/Images'; % note that we then save images into a folder called 'matlab'
+
 % Location of B1 correction files for MTsat:
-fitValues_S_1 = load(fullfile(b1Dir,'fitValues_S_1.mat')); 
+fitValues_S_1 = load(fullfile(OutputDir,'fitValues_VFA_MTsat.mat')); 
+fitValues_S_1 = fitValues_S_1.fitValues;
 
 % Define the output image file extension
 fileExt = '.nii'; % other options include '.nii.gz', '.mnc', '.mnc.gz'
@@ -26,44 +31,26 @@ viewDebugImages = 1;
 % The model-based approach in the present paper uses a B1 map and
 % spoiling correction here.
 
-
 low_flip_angle = 5;    % flip angle in degrees -> Customize
 high_flip_angle = 15;  % flip angle in degrees -> Customize
 TR1 = 25;               % low flip angle repetition time of the GRE kernel in milliseconds -> Customize
 TR2 = 15;               % high flip angle repetition time of the GRE kernel in milliseconds -> Customize
-
-
-
-%%
-    
-param.outdir = b1Dir; % 
-
-T2 = 80; % input used for calculating spoiling parameters.
-smallFlipApprox = false;
-
-param.prot_name  = strcat('vfa_t2_80');    % Used in output
-fnJSON = fullfile(param.outdir,[strrep(param.prot_name,' ',''),'.json']);
+smallFlipApprox = true;
 
 a1 = deg2rad(low_flip_angle); 
 a2 = deg2rad(high_flip_angle); 
 
-R1 = hmri_calc_R1(struct( 'data', lfa_ur, 'fa', a1, 'TR', TR1, 'B1', b1),...
-            struct( 'data', hfa_ur, 'fa', a2, 'TR', TR2, 'B1', b1), smallFlipApprox);
-
-App = hmri_calc_A(struct( 'data', lfa_ur, 'fa', a1, 'TR', TR1, 'B1', b1),...
-            struct( 'data', hfa_ur, 'fa', a2, 'TR', TR2, 'B1', b1), smallFlipApprox);
+R1 = hmri_calc_R1(struct( 'data', PDw, 'fa', a1, 'TR', TR1, 'B1', b1),...
+            struct( 'data', T1w, 'fa', a2, 'TR', TR2, 'B1', b1), smallFlipApprox);
 
 if exist('mask', 'var')
     R1 = R1.*mask;            
     T1 = 1./R1.*mask; % convert to milliseconds
-    App = App .* mask;
 else
     T1 = 1./R1; % convert to milliseconds
 end
 
-App = limitHandler(App, 0, 20000);
 T1 = limitHandler(T1, 0, 6000);
-
 
 if viewDebugImages
     figure; imshow3Dfull(T1, [300 2500],jet)
@@ -110,7 +97,7 @@ x = cos(flip_a) ;
 y = exp(-TR1./T1corr);
 
 % Solve for M0 using equation for flass image.
-M0_1 = lfa_ur.*(1-x.*y)./ ( (1-y) .*sin(flip_a));
+M0_1 = PDw.*(1-x.*y)./ ( (1-y) .*sin(flip_a));
 
 % second image
 flip_a = (high_flip_angle*b1) * pi / 180; % correct for B1 and convert to radians
@@ -118,7 +105,7 @@ x = cos(flip_a) ;
 y = exp(-TR2./T1corr);
 
 % Solve for M0 using equation for flass image.
-M0_2 = hfa_ur.*(1-x.*y)./ ( (1-y) .*sin(flip_a));
+M0_2 = T1w.*(1-x.*y)./ ( (1-y) .*sin(flip_a));
 
 M0_spoil = 2.5* (M0_1 + M0_2)./2; % 2.5 is the gain factor. 
 M0_spoil = limitHandler(M0_spoil, 0, 20000);
@@ -154,7 +141,7 @@ if exist('mask', 'var')
     R1_spoil  = R1_spoil.*mask;
 end
 
-corr_MTsat_map = MTsat_B1corr_factor_map(b1, R1_spoil, 3.586,fitValues_S_1);
+corr_MTsat_map = MTsat_B1corr_factor_map(b1, R1_spoil, 1,fitValues_S_1);
 
 MTsat_corr = MTsat.*( 1 + corr_MTsat_map);
 

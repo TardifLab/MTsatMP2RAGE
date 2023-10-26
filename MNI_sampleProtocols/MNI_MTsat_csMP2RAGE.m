@@ -12,8 +12,12 @@
 % Written by Christopher Rowley 2023
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+OutputDir = 'Directory\b1Correction\outputs'; % should be the same as in simSeq_M0b_R1obs_MNIprot.m
+DATADIR = 'Directory/to/Save/Output/Images'; % note that we then save images into a folder called 'matlab'
+
 % Location of B1 correction files for MTsat:
-fitValues_S_1 = load(fullfile(b1Dir,'fitValues_S_1.mat')); 
+fitValues_S_1 = load(fullfile( OutputDir, 'fitValues_MP2RAGE_MTsat.mat')); 
+fitValues_S_1 = fitValues_S_1.fitValues;
 
 % Define the output image file extension
 fileExt = '.nii'; % other options include '.nii.gz', '.mnc', '.mnc.gz'
@@ -42,12 +46,15 @@ MP2RAGE.FlipDegrees = [4 4];% Flip angle of the two readouts in degrees
 MP2RAGEimg.img = mp2r_uni; % load_untouch_nii(MP2RAGE.filenameUNI);
 MP2RAGEINV2img.img = mp2r_inv2; % load_untouch_nii(MP2RAGE.filenameINV2);
 B1.img = b1;
-brain.img = mask1;
+if exist('mask', 'var')   
+    brain.img = mask1;
+else
+    brain.img = ones(size(b1));
+end
 
 tic
 [ T1map, ~, Appmap] = CR_T1B1correctpackageTFL_withM0( B1, MP2RAGEimg, MP2RAGEINV2img, MP2RAGE, brain, 0.96);
 toc
-    
 
 T1_map = T1map.img;
 App_mp = Appmap.img;
@@ -55,10 +62,9 @@ App_mp = Appmap.img;
 T1_map = limitHandler(T1_map, 0 , 6000);
 App_mp = double(limitHandler(App_mp, 0, 20000));
 
-
     
-hdr.file_name = strcat(DATADIR,'matlab/MP2RAGE_T1.mnc.gz'); niak_write_vol(hdr, T1_map);
-hdr.file_name = strcat(DATADIR,'matlab/MP2RAGE_M0.mnc.gz'); niak_write_vol(hdr, App_mp);
+hdr.file_name = strcat(DATADIR,'matlab/csMP2RAGE_T1.mnc.gz'); niak_write_vol(hdr, T1_map);
+hdr.file_name = strcat(DATADIR,'matlab/csMP2RAGE_M0.mnc.gz'); niak_write_vol(hdr, App_mp);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -73,7 +79,7 @@ end
 
 if viewDebugImages
     figure; imshow3Dfull(MTsat , [0 0.03], turbo) 
-    title('M0 map pre- B1 correction')
+    title('MTsat map pre- B1 correction')
 end
 
 %% Correct for B1 (code to do so is below)
@@ -83,7 +89,7 @@ if exist('mask', 'var')
     R1  = R1.*mask;
 end
 
-corr_MTsat_map = MTsat_B1corr_factor_map(b1, R1, 3.586, fitValues_S_1);
+corr_MTsat_map = MTsat_B1corr_factor_map(b1, R1, 1, fitValues_S_1);
 MTsat_corr = MTsat.*( 1 + corr_MTsat_map);
 
 if exist('mask', 'var')   
@@ -92,7 +98,7 @@ end
 
 if viewDebugImages
     figure; imshow3Dfull(MTsat_corr , [0 0.03], turbo) 
-    title('M0 map post- B1 correction')
+    title('MTsat map post- B1 correction')
 end
 
 hdr.file_name = strcat(DATADIR,'matlab/csMP2RAGE_MTsat', fileExt); 

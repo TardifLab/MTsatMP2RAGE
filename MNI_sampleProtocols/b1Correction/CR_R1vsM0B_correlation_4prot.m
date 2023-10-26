@@ -2,13 +2,12 @@
 
 addpath(genpath('Directory/niak-master' ))
 
-OutputDir = 'Directory\b1Correction\outputs';
+
+
 %% Load images:
 
-
 DATADIR = 'Image/Directory';
-
-DATADIR='/media/chris/data8tb/Research/MagTransfer/20231018_MTsat_data/minc';
+OutputDir = 'Directory\b1Correction\outputs'; % should be the same as in simSeq_M0b_R1obs_MNIprot.m
 
 %image names:
 % in the order of dual, hfa, neg, lfa, pos
@@ -49,6 +48,20 @@ for i = 1:size(mtw_fn,2)
 end
 
 
+% load in the fit results from simulations
+fitValues_csMP2 = load(fullfile(OutputDir,'fitValues_csMP2RAGE_MTsat.mat'));
+fitValues_csMP2 = fitValues_csMP2.fitValues;
+
+fitValues_MP2 = load(fullfile(OutputDir,'fitValues_MP2RAGE_MTsat.mat'));
+fitValues_MP2 = fitValues_MP2.fitValues;
+
+fitValues_meGRE= load(fullfile(OutputDir,'fitValues_meGRE_MTsat.mat'));
+fitValues_meGRE = fitValues_meGRE.fitValues;
+
+fitValues_VFA= load(fullfile(OutputDir,'fitValues_VFA_MTsat.mat'));
+fitValues_VFA = fitValues_VFA.fitValues;
+
+
 %% Load the mask
 fn = fullfile(DATADIR,'itk_mask.nii.gz');
 [~, mask] = niak_read_vol(fn);
@@ -74,9 +87,9 @@ mgre_PDw = all_PCAcorr(:,:,:,1:8);
 mgre_MTw  = all_PCAcorr(:,:,:,9:14);
 mgre_T1w = all_PCAcorr(:,:,:,15:20);
 
-gre_PDw = all_PCAcorr(:,:,:,21);
-gre_MTw  = all_PCAcorr(:,:,:,22);
-gre_T1w = all_PCAcorr(:,:,:,23);
+gre_PDw = comb_mtw(:,:,:,21);
+gre_MTw  = comb_mtw(:,:,:,22);
+gre_T1w = comb_mtw(:,:,:,23);
 
 mp2r_inv1  = all_PCAcorr(:,:,:,24);
 mp2r_inv2 = all_PCAcorr(:,:,:,25);
@@ -177,7 +190,7 @@ low_flip_angle = 5;    % flip angle in degrees -> Customize
 high_flip_angle = 15;  % flip angle in degrees -> Customize
 TR1 = 25;               % low flip angle repetition time of the GRE kernel in milliseconds -> Customize
 TR2 = 15;               % high flip angle repetition time of the GRE kernel in milliseconds -> Customize
-smallFlipApprox = false;
+smallFlipApprox = true;
 
 a1 = deg2rad(low_flip_angle); 
 a2 = deg2rad(high_flip_angle); 
@@ -185,43 +198,37 @@ a2 = deg2rad(high_flip_angle);
 gre_R1 = hmri_calc_R1(struct( 'data', gre_PDw, 'fa', a1, 'TR', TR1, 'B1', b1),...
             struct( 'data', gre_T1w, 'fa', a2, 'TR', TR2, 'B1', b1), smallFlipApprox);
 
-% gre_M0 = hmri_calc_A(struct( 'data', gre_PDw, 'fa', a1, 'TR', TR1, 'B1', b1),...
-%             struct( 'data', gre_T1w, 'fa', a2, 'TR', TR2, 'B1', b1), smallFlipApprox);
-         
 gre_T1 = 1./gre_R1.*mask1; % convert to milliseconds
-% gre_M0 = gre_M0 .* mask1;
-
 gre_T1 = double(limitHandler(gre_T1, 0, 6000));
-% gre_M0 = double(limitHandler(gre_M0, 0, 20000));
 
 % Coeff from hMRI toolbox.
-Acoef = [30.9471,-36.7804,23.9561];
-Bcoef = [-0.0723,0.0474,0.9853];
+Acoef = [30.5365,-39.2652,24.6445];
+Bcoef = [-0.0738,0.0576,0.98];
+
 % Make correction factors:
 A = Acoef(1)*b1.^2 + Acoef(2)*b1 + Acoef(3);
 B = Bcoef(1)*b1.^2 + Bcoef(2)*b1 + Bcoef(3);
 
 % Apply to the T1 map - in milliseconds as simulations are done in ms
-gre_T1 = A + B.*gre_T1 .*mask1;
+gre_T1 = double(A + B.*gre_T1 .*mask1);
 
 % Recalculate M0 using this and the flash equation
-
 flip_a = (low_flip_angle*b1) * pi / 180; % correct for B1 and convert to radians
 x = cos(flip_a) ;
-y = exp(-TR1./T1corr);
+y = exp(-TR1./gre_T1);
 
 % Solve for M0 using equation for flass image.
-M0_1 = lfa_ur.*(1-x.*y)./ ( (1-y) .*sin(flip_a));
+M0_1 = gre_PDw.*(1-x.*y)./ ( (1-y) .*sin(flip_a));
 
 % second image
 flip_a = (high_flip_angle*b1) * pi / 180; % correct for B1 and convert to radians
 x = cos(flip_a) ;
-y = exp(-TR2./T1corr);
+y = exp(-TR2./gre_T1);
 
 % Solve for M0 using equation for flass image.
-M0_2 = hfa_ur.*(1-x.*y)./ ( (1-y) .*sin(flip_a));
+M0_2 = gre_T1w.*(1-x.*y)./ ( (1-y) .*sin(flip_a));
 gre_M0 = (M0_1 + M0_2)./2; 
-gre_M0 = limitHandler(gre_M0, 0, 20000);
+gre_M0 = double(limitHandler(gre_M0, 0, 20000));
 
 hdr.file_name = fullfile(DATADIR,'matlab/gre_T1.mnc.gz'); niak_write_vol(hdr, gre_T1);
 hdr.file_name = fullfile(DATADIR,'matlab/gre_M0.mnc.gz'); niak_write_vol(hdr, gre_M0);
@@ -232,7 +239,6 @@ gre_MTsat  = calcMTsatThruLookupTablewithDummyV3( gre_MTw, b1, gre_T1, mask1,  g
 figure; imshow3Dfull(gre_T1, [300 2500], turbo)
 figure; imshow3Dfull(gre_M0, [0 15000], turbo)
 figure; imshow3Dfull(gre_MTsat, [0 0.03])
-
 
 
 %% ME-GRE
@@ -254,14 +260,8 @@ a2 = deg2rad(high_flip_angle);
 megre_R1 = hmri_calc_R1(struct( 'data', avgre_PDw, 'fa', a1, 'TR', TR1, 'B1', b1),...
             struct( 'data', avgre_T1w, 'fa', a2, 'TR', TR2, 'B1', b1), smallFlipApprox);
 
-% megre_M0 = hmri_calc_A(struct( 'data', avgre_PDw, 'fa', a1, 'TR', TR1, 'B1', b1),...
-%             struct( 'data', avgre_T1w, 'fa', a2, 'TR', TR2, 'B1', b1), smallFlipApprox);
-         
 megre_T1 = 1./megre_R1.*mask1; % convert to milliseconds
-% megre_M0 = megre_M0 .* mask1;
-
 megre_T1 = double(limitHandler(megre_T1, 0, 6000));
-% megre_M0 = double(limitHandler(megre_M0, 0, 20000));
 
 % Coeff from hMRI toolbox.
 Acoef = [62.5025,-72.3755,34.616];
@@ -271,32 +271,29 @@ A = Acoef(1)*b1.^2 + Acoef(2)*b1 + Acoef(3);
 B = Bcoef(1)*b1.^2 + Bcoef(2)*b1 + Bcoef(3);
 
 % Apply to the T1 map - in milliseconds as simulations are done in ms
-gre_T1 = A + B.*gre_T1 .*mask1;
+megre_T1 = double(A + B.*megre_T1 .*mask1);
 
 % Recalculate M0 using this and the flash equation
 
 flip_a = (low_flip_angle*b1) * pi / 180; % correct for B1 and convert to radians
 x = cos(flip_a) ;
-y = exp(-TR1./T1corr);
+y = exp(-TR1./megre_T1);
 
 % Solve for M0 using equation for flass image.
-M0_1 = lfa_ur.*(1-x.*y)./ ( (1-y) .*sin(flip_a));
+M0_1 = avgre_PDw.*(1-x.*y)./ ( (1-y) .*sin(flip_a));
 
 % second image
 flip_a = (high_flip_angle*b1) * pi / 180; % correct for B1 and convert to radians
 x = cos(flip_a) ;
-y = exp(-TR2./T1corr);
+y = exp(-TR2./megre_T1);
 
 % Solve for M0 using equation for flass image.
-M0_2 = hfa_ur.*(1-x.*y)./ ( (1-y) .*sin(flip_a));
+M0_2 = avgre_T1w.*(1-x.*y)./ ( (1-y) .*sin(flip_a));
 megre_M0 = (M0_1 + M0_2)./2; 
 megre_M0 = limitHandler(megre_M0, 0, 20000);
 
-
-
 hdr.file_name = fullfile(DATADIR,'matlab/me-gre_T1.mnc.gz'); niak_write_vol(hdr, megre_T1);
 hdr.file_name = fullfile(DATADIR,'matlab/me-gre_M0.mnc.gz'); niak_write_vol(hdr, megre_M0);
-
 
 megre_MTsat  = calcMTsatThruLookupTablewithDummyV3( avgre_MTw, b1, megre_T1, mask1,  megre_M0, 0, 1, TR1, low_flip_angle,0);
 
@@ -335,22 +332,6 @@ figure; imshow3Dfullseg(spT1_map, [300 2500],mask)
 
 %% With MTsat maps made, perform M0b mapping
 
-OutputDir = '/media/chris/SSD/GitHub/MTsatMP2RAGE/MNI_sampleProtocols/b1Correction/simOutputs';
-
-% load in the fit results for VFA - Optimal
-fitValues_csMP2 = load(fullfile(OutputDir,'fitValues_csMP2RAGE_MTsat.mat'));
-fitValues_csMP2 = fitValues_csMP2.fitValues;
-
-fitValues_MP2 = load(fullfile(OutputDir,'fitValues_MP2RAGE_MTsat.mat'));
-fitValues_MP2 = fitValues_MP2.fitValues;
-
-fitValues_meGRE= load(fullfile(OutputDir,'fitValues_meGRE_MTsat.mat'));
-fitValues_meGRE = fitValues_meGRE.fitValues;
-
-fitValues_VFA= load(fullfile(OutputDir,'fitValues_VFA_MTsat.mat'));
-fitValues_VFA = fitValues_VFA.fitValues;
-
-
 % need to convert to 1/s from 1/ms
 R1_csMP2  = (1./spT1_map) *1000;
 R1_MP2      = (1./T1_map) *1000;
@@ -367,15 +348,17 @@ M0b_VFA      = zeros(size(R1_VFA));
 
 %% SPEED IT UP BY DOING A FEW AXIAL SLICES
  
-% [~, M0b_csMP2] = niak_read_vol(fullfile(OutputDir,'M0b_csMP2.mnc.gz')); 
-% [~, M0b_MP2] = niak_read_vol(fullfile(OutputDir,'M0b_MP2.mnc.gz')); 
-% [~, M0b_meGRE] = niak_read_vol(fullfile(OutputDir,'M0b_meGRE.mnc.gz')); 
-% [~, M0b_VFA] = niak_read_vol(fullfile(OutputDir,'M0b_VFA.mnc.gz'));  
+ax1 = 80;
+ax2 = 110;
+% Check to make sure you are going through right dimension
+figure; imshow3Dfullseg(spT1_map(:,ax1:ax2,:), [300 2500],mask(:,ax1:ax2,:))
+
+
 
 tic %  
-for i = 113:size(R1_VFA,1) % coronal
+for i = 1:size(R1_VFA,1) % coronal
     
-    for j = 1:size(R1_VFA,2) % for axial slices
+    for j = ax1:ax2 % 1:size(R1_VFA,2) % for axial slices
         for k =  1:size(R1_VFA,3) % sagital slices  65
             
             if mask(i,j,k) > 0 %&& dual_s(i,j,k,3) > 0
@@ -449,10 +432,10 @@ fitValues_VFA  = CR_generate_R1vsM0B_correlation( R1_VFA, ...
 %% Now use these results to B1 correct the data:
 OutputDir = DATADIR;
 
-corr_prot1 = MTsat_B1corr_factor_map(b1, R1_csMP2, b1, fitValues_csMP2);
-corr_prot2 = MTsat_B1corr_factor_map(b1, R1_MP2,     b1, fitValues_MP2);
-corr_prot3 = MTsat_B1corr_factor_map(b1, R1_meGRE, b1, fitValues_meGRE);
-corr_prot4 = MTsat_B1corr_factor_map(b1, R1_VFA,      b1, fitValues_VFA);
+corr_prot1 = MTsat_B1corr_factor_map(b1, R1_csMP2, 1, fitValues_csMP2);
+corr_prot2 = MTsat_B1corr_factor_map(b1, R1_MP2,     1, fitValues_MP2);
+corr_prot3 = MTsat_B1corr_factor_map(b1, R1_meGRE, 1, fitValues_meGRE);
+corr_prot4 = MTsat_B1corr_factor_map(b1, R1_VFA,      1, fitValues_VFA);
 
 
 % Part 2, apply correction map
