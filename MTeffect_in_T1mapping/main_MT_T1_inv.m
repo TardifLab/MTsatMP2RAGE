@@ -11,7 +11,7 @@ clc;
 
 outputPath = 'E:\GitHub\Bloch_simulation\Investigations\MTeffect_in_T1mapping\savedOutputs\matrices';
 outputPathFig = 'E:\GitHub\Bloch_simulation\Investigations\MTeffect_in_T1mapping\savedOutputs';
-savePrefix ='FixedT1'; % 'Sled2001', 'LorentzT270',
+savePrefix ='FixedT1_r1'; % 'Sled2001', 'LorentzT270',
 
 % Notes on savePrefix
 % 'Sled2001' uses the relationship to calculate Ra from Raobs
@@ -164,6 +164,13 @@ save( fullfile(outputPath,[savePrefix,'_IR_T1.mat']),"IR_T1");
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Simulate MP2RAGE
 
+% New Params
+Params.InvPulseDur = 10.24/1000;
+Params.invShape = 'hsn';
+Params.PulseOpt = [];
+Params.simAdiabatic = 1;
+
+% Old
 Params.TR = 5000/1000;
 Params.flipAngle = [4,5];
 Params.numExcitation = 175;
