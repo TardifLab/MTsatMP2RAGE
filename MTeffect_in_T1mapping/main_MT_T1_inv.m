@@ -338,7 +338,7 @@ plot([point(1), point(1)], [axLims(3), point(2)], 'k-')  %vertical line
 plot([axLims(1), point(1)], [point(2), point(2)], 'k-')  %horizontal line
 text(lLim + 20, point(1) + 70, strcat(num2str(point(1)), " ms"),'FontSize', FontSize-2)
 hold off
-yticks([]); xticks([]); xlabel([])
+yticks([]); %xticks([]); xlabel([])
 
 saveas(gcf,fullfile(outputPathFig,[savePrefix,'_T1plot_vfa.png']));
 
