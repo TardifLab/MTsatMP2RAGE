@@ -40,7 +40,7 @@ Params = CalcVariableImagingParams(Params);
 simMT_signal = BlochSimFlashSequence_v2(Params);  
 
 
-noise = simMT_signal/SNR;
+noiseLvl = simMT_signal/SNR;
 
 T1 = 1./ Params.Raobs;
 
