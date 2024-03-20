@@ -232,6 +232,15 @@ save( fullfile(outputPath,[savePrefix,'_mp2rage_T1_rev1.mat']),"mp2rage_T1");
 % do separate lines for each bound pool fraction.
 
 
+load( fullfile( outputPath, [savePrefix,'_vfa_T1.mat']));
+load( fullfile(outputPath,[savePrefix,'_IR_T1_mono_rev1.mat']));
+load( fullfile(outputPath,[savePrefix,'_IR_T1_biLong_rev1.mat']));
+load( fullfile(outputPath,[savePrefix,'_IR_T1_biShort_rev1.mat']));
+load( fullfile(outputPath,[savePrefix,'_mp2rage_T1_rev1.mat']));
+
+
+
+
 %% Set up values:
 FontSize = 20;
 lLim = 600;
@@ -287,114 +296,46 @@ temp = mean(y(:,3)-y(:,1)); %Average difference was 70 ms between the two.
 
 
 
+%% Make a second plot that shows the difference relative to T1 long. 
 
+y = [(vfa_T1-IR_T1_biL)./IR_T1_biL,...
+    (IR_T1_mono-IR_T1_biL)./IR_T1_biL,...,
+    (mp2rage_T1-IR_T1_biL)./IR_T1_biL]*100;
 
+FontSize = 20;
+ylLim = -40;
+yhLim = 40;
+yticV = ylLim:20:yhLim;
 
-
-
-
-
-
-
-
-
-
-
-%% IR
-% y data = matrix with length(T1) rows, length(M0b) columns
-y = reshape(IR_T1, [length(T1), length(M0b)]);
 
 figure; 
 hold on;
-for i = 1:length(M0b)
-    plot(x,y(:,i),'Color', cm_data(end-length(M0b)+i-1,: ))
+for i = 1:3
+    plot(x,y(:,i),'Color', cm_data(i,: ),'LineWidth',2)
 end
 xlabel( 'Input T_{1,obs} (ms)', 'FontSize', FontSize, 'FontWeight', 'bold' )
-ylabel( 'Simulated T_{1,obs} (ms)' , 'FontSize', FontSize, 'FontWeight', 'bold');
-xlim([lLim, hLim]); ylim([lLim, hLim])
-xticks(ticV); yticks(ticV)
-title('IR', 'FontSize', FontSize, 'FontWeight', 'bold')
+ylabel( '% Diff. to T_{1,Long}' , 'FontSize', FontSize, 'FontWeight', 'bold');
+xlim([lLim, hLim]); ylim([ylLim, yhLim])
+xticks(ticV); yticks(yticV)
+%title('VFA', 'FontSize', FontSize, 'FontWeight', 'bold')
 ax = gca;  ax.FontSize = FontSize; 
 hold on
-plot(x,refy,':','Color',[0,0,0],'LineWidth',2)
-hold off
-
-saveas(gcf,fullfile(outputPathFig,[savePrefix,'_T1plot_IR.png']));
-
-%% MP2RAGE
-% y data = matrix with length(T1) rows, length(M0b) columns
-y = reshape(mp2rage_T1, [length(T1), length(M0b)]);
-
-figure; 
-hold on;
-for i = 1:length(M0b)
-    plot(x,y(:,i),'Color', cm_data(end-length(M0b)+i-1,: ))
-end
-xlabel( 'Input T_{1,obs} (ms)', 'FontSize', FontSize, 'FontWeight', 'bold' )
-ylabel( 'Simulated T_{1,obs} (ms)' , 'FontSize', FontSize, 'FontWeight', 'bold');
-xlim([lLim, hLim]); ylim([lLim, hLim])
-xticks(ticV); yticks(ticV)
-title('MP2RAGE', 'FontSize', FontSize, 'FontWeight', 'bold')
-ax = gca;  ax.FontSize = FontSize; 
-hold on
-plot(x,refy,':','Color',[0,0,0],'LineWidth',2)
-hold off
-
-saveas(gcf,fullfile(outputPathFig,[savePrefix,'_T1plot_mp2rage.png']));
+yline(0,':','Color',[0,0,0],'LineWidth',1.5)
+legend('VFA','IR Mono','MP2RAGE', 'FontSize', FontSize-4, 'location', 'best')
 
 
-%% Difference From Gold Standard:
-lLim2 = -30;
-hLim2 = 30; %percents
-
-% VFA - IR
-
-y1 = reshape(vfa_T1, [length(T1), length(M0b)]);
-y2 = reshape(IR_T1, [length(T1), length(M0b)]);
-
-y = (y2-y1)./y2 *100; % percent difference
-
-figure; 
-hold on;
-for i = 1:length(M0b)
-    plot(x,y(:,i),'Color', cm_data(end-length(M0b)+i-1,: ))
-end
-xlabel( 'Input T_{1,obs} (ms)', 'FontSize', FontSize, 'FontWeight', 'bold' )
-ylabel( 'Sim. T_{1,obs} Diff (%)' , 'FontSize', FontSize, 'FontWeight', 'bold');
-xlim([lLim, hLim]); ylim([lLim2, hLim2])
-xticks(ticV)
-title('IR - VFA', 'FontSize', FontSize, 'FontWeight', 'bold')
-ax = gca;  ax.FontSize = FontSize; 
-hold on
-plot(x,refy,':','Color',[0,0,0],'LineWidth',1)
-hold off
-
-saveas(gcf,fullfile(outputPathFig,[savePrefix,'_T1plot_diff_IR_vs_vfa.png']));
+saveas(gcf,fullfile(outputPathFig,[savePrefix,'_comp2T1long.png']));
 
 
-% MP2RAGE - IR
 
-y1 = reshape(mp2rage_T1, [length(T1), length(M0b)]);
-y2 = reshape(IR_T1, [length(T1), length(M0b)]);
 
-y = (y2-y1)./y2 *100; % percent difference
 
-figure; 
-hold on;
-for i = 1:length(M0b)
-    plot(x,y(:,i),'Color', cm_data(end-length(M0b)+i-1,: ))
-end
-xlabel( 'Input T_{1,obs} (ms)', 'FontSize', FontSize, 'FontWeight', 'bold' )
-ylabel( 'Sim. T_{1,obs} Diff (%)' , 'FontSize', FontSize, 'FontWeight', 'bold');
-xlim([lLim, hLim]); ylim([lLim2, hLim2])
-xticks(ticV);
-title('IR - MP2RAGE', 'FontSize', FontSize, 'FontWeight', 'bold')
-ax = gca;  ax.FontSize = FontSize; 
-hold on
-plot(x,refy,':','Color',[0,0,0],'LineWidth',1)
-hold off
 
-saveas(gcf,fullfile(outputPathFig,[savePrefix,'_T1plot_diff_IR_vs_mp2rage.png']));
+
+
+
+
+
 
 
 

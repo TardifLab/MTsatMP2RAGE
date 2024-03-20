@@ -83,7 +83,7 @@ for i = 1 : simNum
             'Raobs', Raobs_m(i), 'M0b', M0b_m(i) );
     elseif strcmp( savePrefix, 'FixedT1')
         [vfa_sig(i,1), ~, ~] = BlochSimFlashSequence_v2( Params,...
-            'Raobs', Raobs_m(i), 'M0b', M0b_m(i),'Ra', Raobs_m(i));
+            'Raobs', Raobs_m(i), 'M0b', M0b_m(i),'Ra', Raobs_m(i), 'R1b',Raobs_m(i));
     end
 end
 
@@ -98,7 +98,7 @@ for i = 1: simNum
             'Raobs', Raobs_m(i), 'M0b', M0b_m(i) );
     elseif strcmp( savePrefix, 'FixedT1')
         [vfa_sig(i,2), ~, ~] = BlochSimFlashSequence_v2( Params,...
-            'Raobs', Raobs_m(i), 'M0b', M0b_m(i),'Ra', Raobs_m(i));
+            'Raobs', Raobs_m(i), 'M0b', M0b_m(i),'Ra', Raobs_m(i), 'R1b',Raobs_m(i));
     end
 end
 toc
@@ -161,7 +161,7 @@ for i = 1: simNum
         elseif strcmp( savePrefix, 'FixedT1')
             [IR_sig(i,j), ~, ~] = BlochSim_SpinEcho_IR_Sequence( Params,...
                 'Raobs', Raobs_m(i), 'M0b', M0b_m(i), 'TI', TI(j),...
-                'Ra', Raobs_m(i) );
+                'Ra', Raobs_m(i), 'R1b',Raobs_m(i) );
         end
     end
     disp( i/length(IR_sig) *100)
@@ -240,9 +240,9 @@ for i = 1: simNum
             'Raobs', Raobs_m(i), 'M0b', M0b_m(i) );
     elseif strcmp( savePrefix, 'FixedT1')
         [MP2_sig(i,1),MP2_sig(i,2), ~, ~] = BlochSim_MP2RAGESequence_6vec( Params,...
-            'Raobs', Raobs_m(i), 'M0b', M0b_m(i),'Ra', Raobs_m(i));
+            'Raobs', Raobs_m(i), 'M0b', M0b_m(i),'Ra', Raobs_m(i), 'R1b',Raobs_m(i));
     end
-    disp( i/length(IR_sig) *100)
+    disp( i/simNum *100)
 end
 toc
 
