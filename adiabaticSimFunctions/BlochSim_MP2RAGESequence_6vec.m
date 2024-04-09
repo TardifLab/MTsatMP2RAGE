@@ -41,7 +41,7 @@ if ~isfield(Params,'kr')
     Params.kr = (Params.R*Params.M0a);
 end
 
-if isempty(Params.Ra) % allow you to specify either Ra or Raobs
+if ~isfield(Params,'Ra') || isempty(Params.Ra) % allow you to specify either Ra or Raobs
     Params.Ra = Params.Raobs - ((Params.R * Params.M0b * (Params.R1b - Params.Raobs)) / (Params.R1b - Params.Raobs + Params.R));
     if isnan(Params.Ra)
         Params.Ra = 1;
