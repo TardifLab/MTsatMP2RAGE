@@ -6,10 +6,10 @@
 % b1 - processed b1 map from fmap-b1_tfl
 % MTw - MT-weighted image (anat-mpm_acq-mni_megre_MTon_1mm) - should include 6 echoes stacked in 4th dimension
 % mp2r_uni -UNI image  from MP2RAGE (anat-t1w_acq-mp2rage_1mm_p3)
+% mp2r_inv1 - Inversion 1 Image
 % mp2r_inv2 - Inversion 2 image (anat-t1w_acq-mp2rage_1mm_p3)
 
-% If you want to use the dictionary mapping approach, you need the INV1
-% image as well. 
+% Note: the dictionary mapping approach requires the INV1 image as well. 
 
 % Written by Christopher Rowley 2023
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -44,27 +44,21 @@ MP2RAGE.TIs = [0.94 2.83];% inversion times - time between middle of refocusing 
 MP2RAGE.NZslices = [172/2 172/2];%  Listed in Sequence-Special Samples/TR
 MP2RAGE.NZslices = ceil(MP2RAGE.NZslices);
 MP2RAGE.FlipDegrees = [4 4];% Flip angle of the two readouts in degrees
-
-MP2RAGEimg.img = mp2r_uni; % load_untouch_nii(MP2RAGE.filenameUNI);
-MP2RAGEINV2img.img = mp2r_inv2; % load_untouch_nii(MP2RAGE.filenameINV2);
-B1.img = b1;
-if exist('mask', 'var')   
-    brain.img = mask1;
-else
-    brain.img = ones(size(b1));
-end
-
-tic
-[ T1map, ~, Appmap] = CR_T1B1correctpackageTFL_withM0( B1, MP2RAGEimg, MP2RAGEINV2img, MP2RAGE, brain, 0.96);
-toc
-
-T1_map = T1map.img;
-App_mp = Appmap.img;
-
-T1_map = limitHandler(T1_map, 0 , 6000);
-App_mp = double(limitHandler(App_mp, 0, 20000));
-
     
+% For dictionary mapping, correct INV1 and INV2 images:
+INV1img.img = mp2r_inv1;
+INV2img.img = mp2r_inv2;
+UNIimg.img = mp2r_uni; 
+interpolateT1 = true;
+B1img.img = b1;
+
+[INV1img, INV2img] = Correct_INV1INV2_withMP2RAGEuni(INV1img, INV2img, UNIimg, 0);
+
+[T1, M0map.img, R1map.img] = MP2RAGE_dictionaryMatching(MP2RAGE, real(INV1img.img), INV2img.img, B1img.img, [0.002, 0.005], 1, B1img.img ~= 0);
+
+T1_ms = limitHandler(T1*1000, 0 , 6000);
+App_mp2 = double(limitHandler(M0map.img, 0, 20000));
+
 hdr.file_name = strcat(DATADIR,'matlab/csMP2RAGE_T1.mnc.gz'); niak_write_vol(hdr, T1_map);
 hdr.file_name = strcat(DATADIR,'matlab/csMP2RAGE_M0.mnc.gz'); niak_write_vol(hdr, App_mp);
 

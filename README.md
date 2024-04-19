@@ -27,9 +27,13 @@ Folder b1/ contains the necessary simulation outputs to b1 correct the MTsat dat
 
 Code is broken up into sections depending on what you are looking to do.
 
-- **MTeffect_in_T1mapping/** the main scripts for running the simulations, as well as the resulting values were saved. To get the simulations to match up, you will need to modify the qMRlab script for the lineshape, to the value of 1.4e-5 for condition of superLorenztian lineshape and delta = 0.
+- **MTeffect_in_T1mapping/** the main scripts for running the simulations, as well as the resulting values were saved.
 
 - **ProcessingScripts/** sample scripts for calculating maps
+
+- **simNewSingleProtocol/** simpified code for simulating the B1+ correction factor for different acquisition parameters
+
+- **b1/** contains the calculated simulation results for B1 correction factors used in this study. These should work for your data if you use the same acquisition parameters in the MT-weighted image (including sat pulse time + flip angle)
 
 The inversion recovery data for the phantom was fit using the qMRlab GUI. I was not able to adapt the code to get it to run outside of that.
 
@@ -41,10 +45,10 @@ If you used the simulation code, please reference the following:
 
 Karakuzu, Agah, et al. "qMRLab: Quantitative MRI analysis, under one umbrella." Journal of Open Source Software 5.53 (2020).
 
-Rowley CD, Campbell JSW, Leppert IR, Nelson MC, Pike GB, Tardif CL. Optimization of acquisition parameters for cortical inhomogeneous magnetization transfer (ihMT) imaging using a rapid gradient echo readout. Magnetic Resonance in Medicine. 2023  
-https://onlinelibrary.wiley.com/doi/10.1002/mrm.29754
+Rowley CD, Campbell JSW, Leppert IR, Nelson MC, Pike GB, Tardif CL. Optimization of acquisition parameters for cortical inhomogeneous magnetization transfer (ihMT) imaging using a rapid gradient echo readout. Magnetic Resonance in Medicine. 2023; https://onlinelibrary.wiley.com/doi/10.1002/mrm.29754
 
-If you use the MP2RAGE calculation code, please also cite
+If you use the MP2RAGE calculation code, please also cite: 
+
 Marques, José P., et al. "MP2RAGE, a self bias-field corrected sequence for improved segmentation and T1-mapping at high field." Neuroimage 49.2 (2010): 1271-1281.
 
 **For additional help with this code, contact rowleycd@mcmaster.ca**
